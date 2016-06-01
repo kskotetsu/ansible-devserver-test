@@ -1,0 +1,7 @@
+---
+- name        : よく使うコマンドをインストール
+  apt         :
+    name      : "{{ item }}"
+    state     : installed
+  with_items  : util_packages   # see group_vars/all.yml
+

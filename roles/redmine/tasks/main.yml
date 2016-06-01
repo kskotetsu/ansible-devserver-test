@@ -1,0 +1,5 @@
+---
+- include:       dependencies.yml
+- include: redmine.yml
+- include: database.yml
+- include: settings.yml

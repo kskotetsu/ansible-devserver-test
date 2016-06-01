@@ -1,0 +1,7 @@
+---
+- include: repo.yml
+- include: jenkins.yml
+- include: config.yml
+- include: cli.yml
+- include: plugins.yml
+- include: utils.yml

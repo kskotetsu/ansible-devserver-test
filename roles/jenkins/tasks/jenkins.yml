@@ -1,0 +1,25 @@
+---
+
+- name: Log in to Jenkins CLI if auth config is available
+  # OK to ignore errors as it won't work before Jenkins is installed
+  ignore_errors: yes
+  command: >
+    {{ jenkins_cli_cmd }} login --username {{ jenkins_admin_user }} --password {{ jenkins_admin_password }}
+  when: jenkins_admin_user is defined and jenkins_admin_password is defined
+
+- name: Jenkinsが依存しているパッケージをインストール
+  apt: name={{ item }} state=installed
+  with_items: jenkins.deb.dependencies
+
+- name      : Jenkinsインストール
+  apt       :
+    name    : jenkins
+    state   : installed
+  register  : jenkins_install
+
+- name      : Jenkins起動
+  service   :
+    name    : jenkins
+    state   : started
+    enabled : yes
+

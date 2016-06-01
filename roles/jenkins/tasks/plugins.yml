@@ -1,0 +1,73 @@
+---
+- name: List plugins
+  shell: "{{ jenkins_cli_cmd }} list-plugins | cut -f 1 -d ' '"
+  when: plugins is defined
+  register: plugins_installed
+  
+- name: Ensure jenkins running before requesting safe restart
+  service: name=jenkins state=started
+
+- name: Install/update plugins
+  shell: "{{ jenkins_cli_cmd }} install-plugin {{ item }}"
+  when: plugins_installed.changed and plugins_installed.stdout.find('{{ item }}') == -1
+  with_items: plugins
+  ignore_errors: yes
+  notify:
+    - 'Restart Jenkins'
+
+- name: List plugins to be updated
+  shell: "{{ jenkins_cli_cmd }} -noKeyAuth list-plugins | grep ')$' | cut -f 1 -d ' ' | awk 1 ORS=' '"
+  register: plugins_updates
+  when: (ansible_os_family == "Debian" or ansible_os_family == "RedHat")
+
+- name: Update plugins
+  shell: "{{ jenkins_cli_cmd }} install-plugin {{ item }}"
+  with_items: plugins_updates.stdout.split()
+  when: plugins_updates.stdout != ''
+  ignore_errors: yes
+  notify:
+    - 'Restart Jenkins'
+
+- name      : Jenkins Restart
+  service   :
+    name    : jenkins
+    state   : restarted
+    enabled : yes
+  when: plugins_installed.changed or plugins_updates.changed
+
+# ***** デフォルトプラグイン
+
+# cloudbees-folder 
+# credentials-binding 
+# antisamy-markup-formatter 
+# build-timeout
+# timestamper
+# ws-cleanup
+# ant
+# gradle
+# workflow-aggregator 
+# github-organization-folder 
+# pipeline-stage-view 
+# git
+# subversion
+# ssh-slaves
+# matrix-auth
+# pam-auth
+# ldap
+# email-ext
+# mailer
+
+# ***** 追加プラグイン
+# junit
+# warnings
+# xunit
+# windows-slave
+
+# cppcheck
+# doxygen
+# growl
+# msbuild
+# matrix-project
+# parameterized-trigger 
+
+# role-strategy 

@@ -1,0 +1,72 @@
+---
+- include:       dependencies.yml
+  when:          rbenv_install_dependencies
+
+- name:          Check current installation
+  shell:         rbenv --version
+  ignore_errors: true
+  register:      rbenv_already_installed
+
+- name:          Create root directory
+  file:          path={{ rbenv_root }} state=directory
+  register:      rbenv_root_created
+
+- name:          Install
+  git:           repo=https://github.com/sstephenson/rbenv.git
+                 dest={{ rbenv_root }}
+                 version={{ rbenv_version }}
+                 update=yes
+  when:          rbenv_already_installed|failed or
+                 rbenv_root_created|changed or
+                 rbenv_version == "master" or
+                 rbenv_already_installed.stdout | replace("rbenv ", "") != rbenv_version
+  register:      rbenv_installed
+
+- name:          Install ruby-build plugin
+  git:           repo=https://github.com/sstephenson/ruby-build.git
+                 dest={{ rbenv_root }}/plugins/ruby-build
+                 update=yes
+
+- name:          Install default-gems plugin
+  git:           repo=https://github.com/sstephenson/rbenv-default-gems.git
+                 dest={{ rbenv_root }}/plugins/rbenv-default-gems
+                 update=yes
+
+- name:          Install gem_rehash plugin
+  git:           repo=https://github.com/sstephenson/rbenv-gem-rehash.git
+                 dest={{ rbenv_root }}/plugins/rbenv-gem-rehash
+                 update=yes
+
+- name:          Add binary to $PATH
+  file:          path=/usr/local/bin/rbenv
+                 src={{ rbenv_root }}/bin/rbenv
+                 state=link
+  when:          rbenv_installed|changed
+
+- name:          Add init script
+  template:      src=init.sh.j2
+                 dest=/etc/profile.d/rbenv.sh
+
+- name:          sudo用のパスに追加
+  lineinfile:
+    dest:        '/etc/sudoers'
+    state:       present
+    backrefs:    yes
+    regexp:      '^Defaults        secure_path='
+    line:        'Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\nDefaults !secure_path\n
+Defaults env_keep += "PATH RBENV_ROOT"'
+
+- name:          ruby install
+  shell:         "rbenv install {{ item }}"
+  with_items:    rbenv_install_ruby_versions
+  ignore_errors: true
+
+- name:          set global ruby version
+  shell:         rbenv global {{ rbenv_global_ruby_version }}
+  ignore_errors: true
+
+- name:           gem install bundler
+  gem:
+    name:         bundler
+#    executable:   .rbenv/shims/gem
+    user_install: False

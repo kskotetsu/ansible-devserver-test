@@ -1,0 +1,44 @@
+---
+port: 8080
+prefix: '/'
+
+jenkins_admin_user: 'admin'
+jenkins_admin_password: 'admin'
+
+email:
+  smtp_host: 'mail.example.com'
+  smtp_ssl: 'false'
+  default_email_suffix: '@example.com'
+
+plugins:
+  - 'cloudbees-folder'
+  - 'credentials-binding'
+  - 'antisamy-markup-formatter'
+  - 'build-timeout'
+  - 'timestamper'
+  - 'ws-cleanup'
+  - 'ant'
+  - 'gradle'
+  - 'workflow-aggregator'
+  - 'github-organization-folder'
+  - 'pipeline-stage-view'
+  - 'git'
+  - 'subversion'
+  - 'ssh-slaves'
+  - 'matrix-auth'
+  - 'pam-auth'
+  - 'ldap'
+  - 'email-ext'
+  - 'mailer'
+  - 'junit'
+  - 'warnings'
+  - 'xunit'
+  - 'windows-slaves'
+  - 'cppcheck'
+  - 'doxygen'
+  - 'growl'
+  - 'msbuild'
+  - 'matrix-project'
+  - 'parameterized-trigger'
+  - 'role-strategy'
+

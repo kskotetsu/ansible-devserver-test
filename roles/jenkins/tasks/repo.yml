@@ -1,0 +1,6 @@
+---
+- name: jenkins apt-keyの追加
+  apt_key: url=http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key state=present
+
+- name: Jenkinsリポジトリの追加
+  apt_repository: repo='{{ jenkins.deb.repo }}' state=present update_cache=yes

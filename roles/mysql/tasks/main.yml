@@ -1,0 +1,20 @@
+---
+
+- name        : mysqlのインストール
+  apt         :
+    name      : "{{ item }}"
+    state     : installed
+  with_items  : mysql_packages   # see vars/main.yml
+  register    : mysql_changed
+
+- name        : 言語設定をutf8に
+  template    :
+    src       : 'roles/mysql/templates/mysql.cnf'
+    dest      : '/etc/mysql/conf.d/mysql.cnf'
+  register    : mysql_changed
+    
+- name        : mysqlリスタート
+  service     :
+    name      : mysql
+    state     : restarted
+  when        : mysql_changed.changed

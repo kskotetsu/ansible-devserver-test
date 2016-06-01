@@ -1,0 +1,40 @@
+---
+- name      : Jenkinsセットアップ画面を出ないようにする
+  lineinfile:
+    dest    : '/etc/default/jenkins'
+    state   : present
+    backrefs: yes
+    regexp  : 'JAVA_ARGS="-Djava.awt.headless=true"'
+    line    : 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+  register: config_changed
+
+- name      : Jenkins adminパスワード設定
+  lineinfile:
+    dest    : '/var/lib/jenkins/users/admin/config.xml'
+    state   : present
+    backrefs: yes
+    regexp  : '<passwordHash>'
+    line    : '<passwordHash>#jbcrypt:$2a$10$I9cxqeNt7hxWxnfj7POZeO.yL.FY7Bj08v2Z7IFN1gjPpAp/M2Vh.</passwordHash>'
+  register: config_changed
+
+- name      : Jenkins CLIを使えるようにする
+  lineinfile:
+    dest    : '/var/lib/jenkins/config.xml'
+    state   : present
+    backrefs: yes
+    regexp  : '<slaveAgentPort>-1</slaveAgentPort>'
+    line    : '<slaveAgentPort>0</slaveAgentPort>'
+  register: config_changed
+
+- name      : ユーザーアカウントのサインアップを許可する
+  lineinfile:
+    dest    : '/var/lib/jenkins/config.xml'
+    state   : present
+    backrefs: yes
+    regexp  : '<disableSignup>true</disableSignup>'
+    line    : '<disableSignup>false</disableSignup>'
+  register: config_changed
+
+- name: Jenkins再起動
+  service: name=jenkins state=restarted
+  when: config_changed.changed

@@ -1,0 +1,13 @@
+---
+
+- name        : Apacheのインストール
+  apt         :
+    name      : "{{ item }}"
+    state     : installed
+  with_items  : apache_packages   # see vars/main.yml
+
+- name: Apacheサービススタート
+  service:
+    name: apache2
+    state: started
+    enabled: yes

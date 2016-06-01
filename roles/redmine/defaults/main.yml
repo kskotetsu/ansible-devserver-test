@@ -1,0 +1,10 @@
+---
+
+# redmine_backlogsが入る最新版
+redmine_version:              2.6.6
+
+redmine_packages:
+  - passenger
+  - libapache2-mod-passenger
+  - imagemagick
+  - fonts-ipafont-gothic

@@ -1,0 +1,35 @@
+---
+- name: checkout nvm_repo
+  git: >
+    repo={{ nvm_repo }}
+    dest={{ nvm_root }}
+    version={{ nvm_version }}
+    accept_hostkey=true
+
+- name: add nvm initialization to profile
+  template: >
+    src=nvm.sh.j2
+    dest=/etc/profile.d/nvm.sh
+    owner=root
+    group=root
+    mode=0755
+  become: true
+
+- name: install packages
+  shell: bash -lc "nvm use {{ item.0 }} && npm install -g {{ item.1 }}"
+  with_nested:
+    - "{{ nvm_node_versions }}"
+    - "{{ nvm_global_packages }}"
+
+- name: install versions
+  shell: bash -lc "nvm install {{ item }}"
+  register: output
+  changed_when: "'already installed.' not in output.stderr"
+  with_items: "{{ nvm_node_versions }}"
+
+- name: create alias directory
+  file: path="{{ nvm_root }}/alias" state=directory
+
+- name: set {{ nvm_default_node_version }} as default version
+  copy: dest="{{ nvm_root }}/alias/default" content="{{ nvm_default_node_version }}"
+

@@ -1,0 +1,15 @@
+---
+- include: apt_update.yml
+- include: locale.yml
+- include: timezone.yml
+- include: ntp.yml
+- include: util_tools.yml
+
+# - include: yum_update.yml
+# - include: yum_repos.yml
+# - include: selinux.yml
+# - include: iptables.yml
+# - include: locale.yml
+# - include: timezone.yml
+# - include: ntp.yml
+# - include: util_tools.yml

@@ -1,0 +1,7 @@
+---
+- name        : ciで使うコマンドをインストール
+  apt         :
+    name      : "{{ item }}"
+    state     : installed
+  with_items  : jenkins_util_packages   # see vars/main.yml
+

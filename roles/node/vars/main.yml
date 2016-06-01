@@ -1,0 +1,3 @@
+---
+nvm_repo: "git://github.com/creationix/nvm.git"
+nvm_root: "/usr/local/nvm"

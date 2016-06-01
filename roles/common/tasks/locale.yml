@@ -1,0 +1,7 @@
+﻿---
+- name        : 日本語パッケージをインストール
+  become      : yes
+  apt         : pkg=language-pack-ja
+
+- name        : localeを{{ locale }}に
+  shell       : update-locale LANG={{ locale }} LC_ALL=$locale
