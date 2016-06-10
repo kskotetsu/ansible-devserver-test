@@ -2,16 +2,16 @@
 - include:       dependencies.yml
   when:          rbenv_install_dependencies
 
-- name:          Check current installation
+- name:          インストール状況をチェック
   shell:         rbenv --version
   ignore_errors: true
   register:      rbenv_already_installed
 
-- name:          Create root directory
+- name:          rbenvルートフォルダを作成
   file:          path={{ rbenv_root }} state=directory
   register:      rbenv_root_created
 
-- name:          Install
+- name:          インストール
   git:           repo=https://github.com/sstephenson/rbenv.git
                  dest={{ rbenv_root }}
                  version={{ rbenv_version }}
@@ -22,28 +22,28 @@
                  rbenv_already_installed.stdout | replace("rbenv ", "") != rbenv_version
   register:      rbenv_installed
 
-- name:          Install ruby-build plugin
+- name:          ruby-build pluginをインストール
   git:           repo=https://github.com/sstephenson/ruby-build.git
                  dest={{ rbenv_root }}/plugins/ruby-build
                  update=yes
 
-- name:          Install default-gems plugin
+- name:          default-gems pluginをインストール
   git:           repo=https://github.com/sstephenson/rbenv-default-gems.git
                  dest={{ rbenv_root }}/plugins/rbenv-default-gems
                  update=yes
 
-- name:          Install gem_rehash plugin
+- name:          gem_rehash pluginをインストール
   git:           repo=https://github.com/sstephenson/rbenv-gem-rehash.git
                  dest={{ rbenv_root }}/plugins/rbenv-gem-rehash
                  update=yes
 
-- name:          Add binary to $PATH
+- name:          実行ファイルをパス内にリンク
   file:          path=/usr/local/bin/rbenv
                  src={{ rbenv_root }}/bin/rbenv
                  state=link
   when:          rbenv_installed|changed
 
-- name:          Add init script
+- name:          bash初期化スクリプトを追加
   template:      src=init.sh.j2
                  dest=/etc/profile.d/rbenv.sh
 
@@ -52,21 +52,34 @@
     dest:        '/etc/sudoers'
     state:       present
     backrefs:    yes
+    backup:      yes
     regexp:      '^Defaults        secure_path='
-    line:        'Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\nDefaults !secure_path\n
-Defaults env_keep += "PATH RBENV_ROOT"'
+    line:        'Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
 
-- name:          ruby install
-  shell:         "rbenv install {{ item }}"
+- name:          sudo用の環境変数に追加
+  lineinfile:
+    dest:        '/etc/sudoers'
+    state:       present
+    line:        'Defaults env_keep += "PATH RBENV_ROOT"'
+
+- name:          sudo用のパス設定
+  lineinfile:
+    dest:        '/etc/sudoers'
+    state:       present
+    line:        'Defaults !secure_path'
+
+# 同じセッションで続けるとsodores, profile.dが反映されない。
+# そのためRBENV_ROOTが設定されておらず、rbenvのプラグインが認識されてない
+# 新規のbashから実行させる
+# 最悪byobu, bashから抜けて再度接続していansibleすれば動く
+- name:          rubyのインストール
+  shell:         'bash -lc "rbenv install {{ item }}"'
   with_items:    rbenv_install_ruby_versions
   ignore_errors: true
 
-- name:          set global ruby version
-  shell:         rbenv global {{ rbenv_global_ruby_version }}
+- name:          グローバルで使うrubyバージョンを設定
+  shell:         'bash -lc "rbenv global {{ rbenv_global_ruby_version }}"'
   ignore_errors: true
 
-- name:           gem install bundler
-  gem:
-    name:         bundler
-#    executable:   .rbenv/shims/gem
-    user_install: False
+- name:           bundlerをインストール
+  shell:          '/usr/local/rbenv/versions/{{rbenv_global_ruby_version}}/bin/gem install bundler'

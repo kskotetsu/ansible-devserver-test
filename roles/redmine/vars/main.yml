@@ -1,1 +1,10 @@
 ---
+
+redmine_plugins:
+  - { name: 'clipboard_image_paste', src: 'https://github.com/peclik/clipboard_image_paste' }
+  - { name: 'redmine_issue_templates', src: 'https://github.com/akiko-pusu/redmine_issue_templates' }
+  - { name: 'redmine_drafts', src: 'https://github.com/jbbarth/redmine_drafts' }
+
+
+redmine_hg_plugins:
+  - { name: 'redmine_issue_extensions', src: 'https://bitbucket.org/changeworld/redmine_issue_extensions' }

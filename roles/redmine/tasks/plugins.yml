@@ -1,0 +1,37 @@
+---
+- name       : プラグインのインストール(git)
+  become_user: www-data
+  git        :
+    repo     : "{{ item.src }}"
+    dest     : "{{ redmine_root }}/plugins/{{ item.name }}"
+    force    : yes
+  with_items :  redmine_plugins
+
+- name       : プラグインのインストール(hg)
+  become_user: www-data
+  hg         :
+    repo     : "{{ item.src }}"
+    dest     : "{{ redmine_root }}/plugins/{{ item.name }}"
+    force    : yes
+  with_items :  redmine_hg_plugins
+
+- name      : redmine_issue_templatesパッチ当て
+  lineinfile: 
+    dest    : "{{ redmine_root }}/plugins/redmine_issue_templates/Gemfile"
+    state   : present
+    backrefs: yes
+    regexp  : "gem 'shoulda'"
+    line    : "# gem 'shoulda'"
+
+- name       : bundle update
+  become_user: www-data
+  shell      : bash -lc "RAILS_ENV=production bundle update" chdir="{{ redmine_root }}/plugins"
+
+- name       : migration
+  become_user: www-data
+  shell      : bash -lc "RAILS_ENV=production bundle exec rake redmine:plugins:migrate" chdir="{{ redmine_root }}/plugins"
+
+- name          : apache restart
+  service       :
+    name        : apache2
+    state       : restarted

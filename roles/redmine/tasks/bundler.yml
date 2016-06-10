@@ -1,0 +1,39 @@
+---
+# bundle install --without development test
+# - name:             gem bundle install
+#   bundler:
+#     state:          present
+#     gemfile:        "{{ redmine_root }}/Gemfile"
+#     chdir:          "{{ redmine_root }}"
+#     user_install    yes
+#     exclude_groups:
+#       - development
+#       - test
+    
+# bundle install
+
+# - name: gem install bundler
+#   shell: gem install bundler
+
+# - name: install bundler
+#   gem:
+#     name: bundler
+- name:           bundlerをインストール
+  shell:          'bash -lc "gem install bundler"'
+    
+- name: missing gem install
+  become_user: www-data
+  command: bash -lc "gem install mysql2 -v '0.3.21' -i /var/lib/redmine/vendor/bundle"
+    
+
+# - name: set jobs 4
+#   shell: bundle config --global --jobs 4 chdir=/var/lib/redmine
+#   remote_user: www-data
+
+# - name: Install Bundle
+#   shell: bundle install --path vendor/bundle --without development test chdir=/var/lib/redmine
+#   remote_user: www-data
+
+- name: Install bundle gems
+  become_user: www-data
+  command: bash -lc "bundle install --path /var/lib/redmine/vendor/bundle --without development test" chdir=/var/lib/redmine

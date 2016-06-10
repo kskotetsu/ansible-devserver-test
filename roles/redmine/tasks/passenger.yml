@@ -1,0 +1,66 @@
+---
+
+# なぜかgemモジュールだとインストールしてくれない
+
+# - name         : rackインストール
+#   gem          :
+#     name       : rack
+#     version    : 1.6.4
+
+# - name         : passengerインストール
+#   gem          :
+#     name       : passenger
+#     version    : 5.0.10
+
+# モジュールビルドでメモリをたくさん食うのでいくつかサービスを止める
+- name      : Jenkinsストップ
+  ignore_errors : yes
+  service   :
+    name    : jenkins
+    state   : stopped
+
+- name      : Mysqlストップ
+  ignore_errors : yes
+  service   :
+    name    : mysql
+    state   : stopped
+
+- name  : rackインストール
+  shell : 'bash -lc "gem install rack -v=1.6.4"'
+
+- name  : passengerインストール
+  # shell : 'bash -lc "gem install passenger -v=5.0.10"'
+  shell : 'bash -lc "gem install passenger -v=5.0.28"'
+  # shell : 'bash -lc "gem install passenger -v=4.0.60"'
+
+
+
+# mod_passenger.so のインストールされているべきパスを取得する
+- name         : get mod_passenger.so path
+  shell        : bash -lc '/usr/local/rbenv/shims/passenger-install-apache2-module --snippet' | grep passenger_module | awk '{print $3}'
+  register     : mod_passenger_path
+  changed_when : False
+
+# 先の結果を利用して mod_passenger.so の存在確認を行う
+- name         : check mod_passenger.so installed
+  command      : test -f {{ mod_passenger_path.stdout }}
+  register     : mod_passenger_installed
+  failed_when  : mod_passenger_installed.rc not in [0, 1]
+  changed_when : False
+
+- name         : passenger Apacheモジュールのインストール
+  shell        : bash -lc '/usr/local/rbenv/shims/passenger-install-apache2-module --auto'
+  when         : mod_passenger_installed.rc == 1
+
+
+- name      : Jenkins起動
+  ignore_errors : yes
+  service   :
+    name    : jenkins
+    state   : started
+
+- name      : Mysql起動
+  ignore_errors : yes
+  service   :
+    name    : mysql
+    state   : started

@@ -1,5 +1,10 @@
 ---
+# mysql_packages:
+#   - mysql-common
+#   - mysql-server
+#   - mysql-client
+
 mysql_packages:
-  - mysql-common
-  - mysql-server
-  - mysql-client
+  - mysql-server-5.6
+  - mysql-client-5.6
+  - python2.7-mysqldb

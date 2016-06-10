@@ -1,1 +1,121 @@
 ---
+- name          : データベース設定ファイル作成
+  template      :
+    src         : templates/database.yml.example
+    dest        : "{{ redmine_root }}/config/database.yml"
+  register:
+    result_database_yml
+
+- name          : メール等設定ファイル作成
+  template      :
+    src         : templates/configuration.yml.example
+    dest        : "{{ redmine_root }}/config/configuration.yml"
+
+
+- name          : 鍵生成
+  become_user   : www-data
+  command       : 'bash -lc "bundle exec rake generate_secret_token" chdir={{ redmine_root }}'
+  # when:
+  #   result_database_yml|changed
+
+- name          : 設定ファイル作成
+  template      :
+    src         : templates/settings.yml
+    dest        : "{{ redmine_root }}/config/settings.yml"
+    backup      : yes
+
+- name: farend_basicテーマのダウンロード
+  git:
+    repo=https://github.com/farend/redmine_theme_farend_basic.git
+    dest={{ redmine_root }}/public/themes/farend_basic
+
+# - name        : テーブル作成
+#   shell       : 'RAILS_ENV=production bundle exec rake db:migrate'
+#   args        :
+#     chdir     : /var/lib/redmine
+
+- name          : テーブル作成
+  become_user   : www-data
+  command       : bash -lc "RAILS_ENV=production bundle exec rake db:migrate" chdir=/var/lib/redmine
+  # when:
+  #   result_database_yml|changed
+
+- name           : デフォルトデータの読み込み
+  command        : bash -lc "REDMINE_LANG=ja RAILS_ENV=production bundle exec rake redmine:load_default_data" chdir={{ redmine_root }}
+  environment    :
+    PATH         : "/usr/local/bin:{{ ansible_env.PATH }}"
+    RAILS_ENV    : production
+    REDMINE_LANG : ja
+
+# - name: テーマをfarend_basicに切り替え
+#   command:
+#     bash -lc 'RAILS_ENV=production bundle exec rails r Setting["ui_theme"]="farend_basic"'
+#     chdir="{{ redmine_root }}"
+#   environment:
+#     # PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+#     RAILS_ENV: production
+
+# - name: デフォルトの言語を日本語に変更
+#   command:
+#     bash -lc RAILS_ENV=production bundle exec rails r 'Setting["default_language"]="ja"'
+#     chdir={{ redmine_root }}
+#   environment:
+#     # PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+#     RAILS_ENV: production
+
+# - name: ユーザー名の表示形式を「姓 名」に変更
+#   command:
+#     bash -lc RAILS_ENV=production bundle exec rails r 'Setting["user_format"]=:lastname_firstname'
+#     chdir={{ redmine_root }}
+#   environment:
+#     # PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+#     RAILS_ENV: production
+
+# - name: 添付ファイルとリポジトリのエンコーディングを設定
+#   command:
+#     bash -lc RAILS_ENV=production bundle exec rails r 'Setting["repositories_encodings"]="UTF-8,CP932,EUC-JP"'
+#     chdir={{ redmine_root }}
+#   environment:
+#     # PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+#     RAILS_ENV: production
+
+# - name: 添付ファイルのサムネイルを表示
+#   command:
+#     bash -lc RAILS_ENV=production bundle exec rails r 'Setting["thumbnails_enabled"]="1"'
+#     chdir={{ redmine_root }}
+#   environment:
+#     # PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+#     RAILS_ENV: production
+
+- name          : ブラウザからサブディレクトリでアクセスするためにシンボリックリンク作成
+  file          :
+    src         : /var/lib/redmine/public
+    dest        : /var/www/html/redmine
+    state       : link
+
+# site-available/redmine.conf
+# a2ensite redmine
+# restart
+
+- name          : passengerのコンフィグを取得
+  shell         : bash -lc 'passenger-install-apache2-module --snippet'
+  register      : passenger_conf
+#  changed_when : False
+
+- name          : Apache用redmineコンフィグファイルの作成
+  template      :
+    src         : templates/redmine.conf
+    dest        : /etc/apache2/conf-available
+
+- name          : passengerの有効化
+  shell         : a2enconf redmine
+
+# - name        : passengerの有効化
+#   shell       : a2enmod passenger
+
+- name          : apache restart
+  service       :
+    name        : apache2
+    state       : restarted
+    
+    

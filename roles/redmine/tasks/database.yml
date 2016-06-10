@@ -1,1 +1,18 @@
 ---
+- name        : mysql start
+  service     :
+    name      : mysql
+    state     : started
+
+- name       : redmineデータベースを作成
+  mysql_db   : 
+    name     : redmine_db
+    state    : present
+    encoding : utf8
+
+- name       : MySqlにredmineユーザーを作成
+  mysql_user : 
+    name     : redmine_user
+    password : 'redmineDbAdmin'
+    state    : present
+    priv     : redmine_db.*:ALL

@@ -6,8 +6,9 @@
     state     : installed
   with_items  : apache_packages   # see vars/main.yml
 
-- name: Apacheサービススタート
-  service:
-    name: apache2
-    state: started
-    enabled: yes
+- name          : Apacheサービススタート
+  service       :
+    name        : apache2
+    state       : started
+    enabled     : yes
+  ignore_errors : yes

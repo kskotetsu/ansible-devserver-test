@@ -1,5 +1,20 @@
 [mysqld]
 character-set-server=utf8
+# default-character-set-server=utf8
+skip-character-set-client-handshake
+
+#  Error log
+log_error="/var/log/mysql/mysqld.log"
+log_warnings=1
+
+#  Slow Query log
+slow_query_log=1
+slow_query_log_file="/var/log/mysql/slow.log"
+log_queries_not_using_indexes
+log_slow_admin_statements
 
 [mysql]
+default-character-set=utf8
+
+[client]
 default-character-set=utf8

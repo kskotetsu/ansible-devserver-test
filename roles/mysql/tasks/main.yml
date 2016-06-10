@@ -1,4 +1,18 @@
 ---
+# ubuntu 16.04にmysql 5.6
+
+- name:           MySql5.6の入ったaptリポジトリを追加
+  apt_repository:
+    repo:         'deb http://archive.ubuntu.com/ubuntu trusty universe'
+    state:        present
+  register:        add_repository
+
+- name:            apt update
+  apt:
+    update_cache:  yes
+  # when:
+  #   add_repository.changed
+ 
 
 - name        : mysqlのインストール
   apt         :
@@ -11,6 +25,7 @@
   template    :
     src       : 'roles/mysql/templates/mysql.cnf'
     dest      : '/etc/mysql/conf.d/mysql.cnf'
+    backup    : yes
   register    : mysql_changed
     
 - name        : mysqlリスタート

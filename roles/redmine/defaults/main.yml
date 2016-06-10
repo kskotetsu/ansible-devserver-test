@@ -1,10 +1,15 @@
 ---
 
-# redmine_backlogsが入る最新版
-redmine_version:              2.6.6
+# for redmine_backlogs
+redmine_version:   2.6
+redmine_root: /var/lib/redmine
 
 redmine_packages:
-  - passenger
-  - libapache2-mod-passenger
+  - apache2-dev
+  - libcurl4-gnutls-dev
+  - libmysqlclient-dev
   - imagemagick
+  - libmagickwand-dev
+  - pkg-config
   - fonts-ipafont-gothic
+

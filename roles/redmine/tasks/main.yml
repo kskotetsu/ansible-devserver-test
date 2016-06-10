@@ -1,5 +1,8 @@
 ---
-- include:       dependencies.yml
+- include: plugins.yml
+- include: dependencies.yml
+- include: passenger.yml
 - include: redmine.yml
 - include: database.yml
+- include: bundler.yml
 - include: settings.yml

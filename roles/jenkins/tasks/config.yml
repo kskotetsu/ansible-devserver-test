@@ -1,4 +1,8 @@
 ---
+
+- name: Jenkins起動待ち
+  pause: seconds=5
+
 - name      : Jenkinsセットアップ画面を出ないようにする
   lineinfile:
     dest    : '/etc/default/jenkins'

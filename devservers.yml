@@ -5,12 +5,12 @@
   become  : yes
   roles   :
     - common
-#    - jenkins
-#    - node
+    - node
     - mysql
     - apache
     - rbenv
     - redmine
+    - jenkins
     # - subversion
     # - wordpress
     # - etherpad-lite

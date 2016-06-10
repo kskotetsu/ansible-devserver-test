@@ -4,15 +4,15 @@ rbenv_install_dependencies: true
 # rbenv_root:                 "{{ ansible_env.HOME }}/.rbenv"
 rbenv_root:                 "/usr/local/rbenv"
 rbenv_version:              master
+rbenv_global_ruby_version:  2.1.10
 
 rbenv_packages:
-    - git
-    - libssl-dev
-    - libreadline-dev
-    - zlib1g-dev
+  - git
+  - libssl-dev
+  - libreadline-dev
+  - zlib1g-dev
 
 rbenv_install_ruby_versions:
   - 2.1.10
-  - 2.3.1
+#  - 2.3.1
 
-rbenv_global_ruby_version: 2.1.10

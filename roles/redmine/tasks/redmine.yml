@@ -1,1 +1,18 @@
 ---
+
+# subversion moduleを使うときはLANG="C"しないとチェックアウト後のリビジョン確認でエラーが出る
+- name        : redmine {{ redmine_version }} checkout to {{ redmine_root }}
+  subversion  : 
+    repo      : "http://svn.redmine.org/redmine/branches/{{ redmine_version }}-stable"
+    dest      : "{{ redmine_root }}"
+    force     : yes
+  environment : 
+    LANG      : "C"
+    LC_ALL    : "C"
+
+- name        : フォルダの所有者を変更
+  file        : 
+    path      : "{{ redmine_root }}"
+    owner     : 'www-data'
+    group     : 'www-data'
+    recurse   : yes
